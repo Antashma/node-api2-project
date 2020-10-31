@@ -51,13 +51,46 @@ server.get('/api/posts/:id', (req, res) => {
 /* GET	/api/posts/:id/comments	
 Returns an array of all the comment objects associated with the post with the specified id. */
 server.get('/api/posts/:id/comments', (req, res) => {
-
+    const {id} = req.params;
+    model.findPostComments(id)
+        .then(postComments => {
+            if (postComment.length > 0) {
+                res.status(200).json(postComments);
+            } else {
+                res.status(404).json({
+                    message: "The post with the specified ID does not have comments or may not exist." 
+                })
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                error: "The comments information could not be retrieved."
+            });
+        })
 })
 
 /* POST	/api/posts	
 Creates a post using the information sent inside the request body.*/
+//This runs the server error if title or content is missing :/?????
 server.post('/api/posts', (req, res) => {
-
+    console.log('req body: ', req.body);
+    model.insert(req.body)
+        .then(post => {
+            if (!post.title || !post.contents) {
+                res.status(400).json({
+                    errorMessage: "Please provide title and contents for the post."
+                })
+            } else {
+                res.status(201).json(post)
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                error: 'There was an error while saving the post to the database.'
+            })
+        })
 })
 
 /*POST	/api/posts/:id/comments	
