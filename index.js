@@ -13,18 +13,44 @@ server.get('/', (req, res) => {
 /* GET	/api/posts	
 Returns an array of all the post objects contained in the database. */
 server.get('/api/posts', (req, res) => {
+    model.find()
+    .then(posts => {
+        res.status(200).json(posts)
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json({
+            error: 'The posts information could not be retrieved.'
+        })
+    })
 
 })
 
 /* GET	/api/posts/:id	
 Returns the post object with the specified id. */
-server.get('/api/post/:id', (req, res) => {
-
+server.get('/api/posts/:id', (req, res) => {
+    const {id} = req.params;
+    model.findById(id)
+        .then(post => {
+            if (post.length > 0) {
+                res.status(200).json(post);
+            } else {
+                res.status(404).json({
+                    message: "The post with the specified ID does not exist." 
+                });
+            };    
+        })
+        .catch(err => {
+            console.log(err)
+            res.status(500).json({
+                error: 'The post information could not be retrieved.'
+            })
+        })
 })
 
 /* GET	/api/posts/:id/comments	
 Returns an array of all the comment objects associated with the post with the specified id. */
-server.get('/api/post/:id/comments', (req, res) => {
+server.get('/api/posts/:id/comments', (req, res) => {
 
 })
 
@@ -49,8 +75,11 @@ server.delete('/api/posts/:id', (req, res) => {
 /* PUT	/api/posts/:id	
 Updates the post with the specified id using data from the request body. Returns the modified document, NOT the original. */
 server.put('/api/posts/:id', (req, res) => {
-    
+
 })
+
+
+
 
 
 const PORT = 5000;
