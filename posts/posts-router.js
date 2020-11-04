@@ -1,10 +1,11 @@
+const express = require('express')
 const model = require('../data/db.js');
 const router = express.Router();
 
 
 /* GET	/api/posts	
 Returns an array of all the post objects contained in the database. */
-router.get('/api/posts', (req, res) => {
+router.get('/', (req, res) => {
     model.find()
     .then(posts => {
         res.status(200).json(posts)
@@ -20,7 +21,7 @@ router.get('/api/posts', (req, res) => {
 
 /* GET	/api/posts/:id	
 Returns the post object with the specified id. */
-router.get('/api/posts/:id', (req, res) => {
+router.get('/:id', (req, res) => {
     const {id} = req.params;
     model.findById(id)
         .then(post => {
@@ -42,7 +43,7 @@ router.get('/api/posts/:id', (req, res) => {
 
 /* GET	/api/posts/:id/comments	
 Returns an array of all the comment objects associated with the post with the specified id. */
-router.get('/api/posts/:id/comments', (req, res) => {
+router.get('/:id/comments', (req, res) => {
     const {id} = req.params;
     model.findPostComments(id)
         .then(postComments => {
@@ -64,12 +65,12 @@ router.get('/api/posts/:id/comments', (req, res) => {
 
 /* POST	/api/posts	
 Creates a post using the information sent inside the request body.*/
-//This runs the router error if title or content is missing :/?????
-router.post('/api/posts', (req, res) => {
-    console.log('req body: ', req.body);
+//This runs the 500 error if title or content is missing :/?????
+router.post('/', (req, res) => {
+    const {title, contents} = req.body
     model.insert(req.body)
         .then(post => {
-            if (!post.title || !post.contents) {
+            if (!title || !contents) {
                 res.status(400).json({
                     errorMessage: "Please provide title and contents for the post."
                 })
@@ -87,7 +88,7 @@ router.post('/api/posts', (req, res) => {
 
 /*POST	/api/posts/:id/comments	
 Creates a comment for the post with the specified id using information sent inside of the request body. */
-router.post('/api/posts/:id/comments', (req, res) => {
+router.post('/:id/comments', (req, res) => {
     const {id} = req.params;
     const body = ({...req.body, post_id: id});
     model.insertComment(body)
@@ -97,7 +98,7 @@ router.post('/api/posts/:id/comments', (req, res) => {
                     message: "The post with the specified ID does not exist."})
             } else if (!body.text) {
                 res.status(400).json({
-                    message:"Please provide text for the comment."
+                    errorMessage:"Please provide text for the comment."
                 })
             } else {
                 res.status(201).json(comment)
@@ -113,14 +114,14 @@ router.post('/api/posts/:id/comments', (req, res) => {
 
 /* DELETE	/api/posts/:id	
 Removes the post with the specified id and returns the deleted post object. You may need to make additional calls to the database in order to satisfy this requirement. */
-router.delete('/api/posts/:id', (req, res) => {
+router.delete('/:id', (req, res) => {
     model.remove(req.params.id)
         .then(post => {
             if (post) {
             res.status(200).json('Post deleted!');
             } else {
                 res.status(404).json({
-                    message: 'The post with the specified ID does not exist.'
+                    errorMessage: 'The post with the specified ID does not exist.'
                 });
             }
         })
@@ -134,7 +135,7 @@ router.delete('/api/posts/:id', (req, res) => {
 
 /* PUT	/api/posts/:id	
 Updates the post with the specified id using data from the request body. Returns the modified document, NOT the original. */
-router.put('/api/posts/:id', (req, res) => {
+router.put('/:id', (req, res) => {
     model.update(req.params.id, req.body)
         .then(post => {
             if (req.params.id) {
