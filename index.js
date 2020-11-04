@@ -1,4 +1,5 @@
 const express = require('express');
+const { findPostComments } = require('./data/db.js');
 const model = require('./data/db.js');
 const server = express();
 
@@ -54,7 +55,7 @@ server.get('/api/posts/:id/comments', (req, res) => {
     const {id} = req.params;
     model.findPostComments(id)
         .then(postComments => {
-            if (postComment.length > 0) {
+            if (postComments.length > 0) {
                 res.status(200).json(postComments);
             } else {
                 res.status(404).json({
@@ -96,7 +97,27 @@ server.post('/api/posts', (req, res) => {
 /*POST	/api/posts/:id/comments	
 Creates a comment for the post with the specified id using information sent inside of the request body. */
 server.post('/api/posts/:id/comments', (req, res) => {
-
+    const {id} = req.params;
+    const body = ({...req.body, post_id: id});
+    model.insertComment(body)
+        .then(comment => {
+            if (!model.findById(id)) {
+                res.status(400).json({
+                    message: "The post with the specified ID does not exist."})
+            } else if (!body.text) {
+                res.status(400).json({
+                    message:"Please provide text for the comment."
+                })
+            } else {
+                res.status(201).json(comment)
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                error: "There was an error while saving the comment to the database"
+            });
+        })
 })
 
 /* DELETE	/api/posts/:id	
